@@ -1,0 +1,309 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum BillingPeriod {
+  monthly
+  yearly
+}
+
+enum SubscriptionStatus {
+  active
+  canceled
+  pending_change
+}
+
+enum PaymentMethod {
+  card
+  sepa
+  cash
+}
+
+enum PaymentStatus {
+  succeeded
+  failed
+  refunded
+}
+
+enum ClassSessionStatus {
+  scheduled
+  full
+  canceled
+  finished
+}
+
+enum RegistrationStatus {
+  registered
+  canceled
+  attended
+  no_show
+}
+
+enum EntityType {
+  class_session
+  pt_session
+}
+
+enum Action {
+  create
+  update
+  cancel
+}
+
+enum ApprovalStatus {
+  new
+  approved
+  rejected
+}
+
+enum Channel {
+  in_app
+  email
+  sms
+}
+
+enum PtSessionStatus {
+  requested
+  booked
+  completed
+  canceled
+  rejected
+}
+
+enum NotificationStatus {
+  queued
+  sent
+  failed
+}
+
+model User {
+  id         String   @id @default(uuid()) @db.Char(36)
+  email      String   @unique @db.VarChar(255)
+  username   String   @unique @db.VarChar(50)
+  first_name String   @db.VarChar(100)
+  last_name  String   @db.VarChar(100)
+  phone      String   @db.VarChar(30)
+  role_id    Int
+  is_active  Boolean  @default(true)
+  created_at DateTime @default(now()) @db.Timestamp(6)
+
+  role       Role     @relation(fields: [role_id], references: [id])
+
+  trainer               Trainer?
+  subscriptions          Subscription[]
+  class_registrations    ClassRegistration[]
+  pt_sessions_as_user    PtSession[]        @relation("UserPtSessions")
+  pt_sessions_as_trainer PtSession[]        @relation("TrainerPtSessions")
+  approval_requests      ApprovalRequest[]
+  notifications          Notification[]
+  reminder_rules         ReminderRule[]
+  audit_logs             AuditLog[]         @relation("UserAuditLogs")
+
+  @@map("users")
+}
+
+model Role {
+  id    Int    @id @default(autoincrement())
+  name  String @db.VarChar(30)
+  users User[]
+
+  @@map("roles")
+}
+
+model Trainer {
+  user_id String @id @db.Char(36)
+  bio     String @db.Text
+  user    User   @relation(fields: [user_id], references: [id])
+
+  class_sessions ClassSession[]
+  availabilities TrainerAvailability[]
+
+  @@map("trainers")
+}
+
+model MembershipPlan {
+  id             BigInt  @id @default(autoincrement())
+  name           String  @db.VarChar(100)
+  price_eur      Decimal @db.Decimal(10, 2)
+  billing_period BillingPeriod
+  perks_json     Json
+  is_active      Boolean @default(true)
+
+  subscriptions  Subscription[] @relation("Subscription_plan")
+  nextSubs       Subscription[] @relation("Subscription_next_plan")
+
+  @@map("membership_plans")
+}
+
+model Subscription {
+  id                   BigInt   @id @default(autoincrement())
+  user_id              String
+  plan_id              BigInt
+  status               SubscriptionStatus
+  current_period_start DateTime
+  current_period_end   DateTime
+  next_plan_id         BigInt?
+  auto_renew           Boolean  @default(true)
+
+  user     User            @relation(fields: [user_id], references: [id])
+  plan     MembershipPlan  @relation("Subscription_plan", fields: [plan_id], references: [id])
+  nextPlan MembershipPlan? @relation("Subscription_next_plan", fields: [next_plan_id], references: [id])
+  payments Payment[]
+
+  @@map("subscriptions")
+}
+
+model Payment {
+  id              BigInt   @id @default(autoincrement())
+  subscription_id BigInt
+  amount_eur      Decimal  @db.Decimal(10, 2)
+  paid_at         DateTime @db.Timestamp(6)
+  method          PaymentMethod
+  status          PaymentStatus
+
+  subscription    Subscription @relation(fields: [subscription_id], references: [id])
+
+  @@map("payments")
+}
+
+model ClassType {
+  id                   BigInt  @id @default(autoincrement())
+  name                 String  @db.VarChar(100)
+  description          String  @db.Text
+  default_duration_min Int     @db.SmallInt
+
+  sessions ClassSession[]
+
+  @@map("class_types")
+}
+
+model Location {
+  id       BigInt @id @default(autoincrement())
+  name     String @db.VarChar(100)
+  capacity Int    @db.SmallInt
+
+  sessions ClassSession[]
+
+  @@map("locations")
+}
+
+model ClassSession {
+  id                BigInt   @id @default(autoincrement())
+  class_type_id     BigInt
+  coach_id          String
+  location_id       BigInt
+  start_at          DateTime @db.Timestamp(6)
+  duration_min      Int      @db.SmallInt
+  capacity_override Int?     @db.SmallInt
+  status            ClassSessionStatus
+
+  class_type ClassType @relation(fields: [class_type_id], references: [id])
+  coach      Trainer   @relation(fields: [coach_id], references: [user_id])
+  location   Location  @relation(fields: [location_id], references: [id])
+
+  registrations ClassRegistration[]
+
+  @@map("class_sessions")
+}
+
+model ClassRegistration {
+  session_id    BigInt
+  user_id       String
+  registered_at DateTime @db.Timestamp(6)
+  status        RegistrationStatus
+
+  session ClassSession @relation(fields: [session_id], references: [id])
+  user    User         @relation(fields: [user_id], references: [id])
+
+  @@id([session_id, user_id])
+  @@map("class_registrations")
+}
+
+model TrainerAvailability {
+  id         BigInt   @id @default(autoincrement())
+  trainer_id String
+  weekday    Int      @db.SmallInt
+  start_time DateTime @db.Time(0)
+  end_time   DateTime @db.Time(0)
+
+  trainer Trainer @relation(fields: [trainer_id], references: [user_id])
+
+  @@map("trainer_availability")
+}
+
+model PtSession {
+  id           BigInt   @id @default(autoincrement())
+  trainer_id   String
+  user_id      String
+  start_at     DateTime @db.Timestamp(6)
+  duration_min Int      @db.SmallInt
+  status       PtSessionStatus
+
+  trainer User @relation("TrainerPtSessions", fields: [trainer_id], references: [id])
+  user    User @relation("UserPtSessions", fields: [user_id], references: [id])
+
+  @@map("pt_sessions")
+}
+
+model ApprovalRequest {
+  id           BigInt        @id @default(autoincrement())
+  requester_id String
+  entity_type  EntityType
+  entity_id    BigInt
+  action       Action
+  status       ApprovalStatus
+  created_at   DateTime @default(now()) @db.Timestamp(6)
+  decided_at   DateTime? @db.Timestamp(6)
+
+  requester User @relation(fields: [requester_id], references: [id])
+
+  @@map("approval_requests")
+}
+
+model Notification {
+  id           BigInt            @id @default(autoincrement())
+  user_id      String
+  channel      Channel
+  title        String
+  body         String
+  related_type String
+  related_id   BigInt?
+  sent_at      DateTime? @db.Timestamp(6)
+  status       NotificationStatus
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("notifications")
+}
+
+model ReminderRule {
+  id           BigInt   @id @default(autoincrement())
+  user_id      String
+  entity_type  EntityType
+  offset_hours Int      @db.SmallInt
+  channel      Channel
+  is_active    Boolean  @default(true)
+
+  user User @relation(fields: [user_id], references: [id])
+
+  @@map("reminder_rules")
+}
+
+model AuditLog {
+  id            BigInt   @id @default(autoincrement())
+  actor_user_id String
+  action        String   @db.VarChar(50)
+  entity_type   String   @db.Text
+  entity_id     BigInt
+  at            DateTime @default(now()) @db.Timestamp(6)
+  diff_json     Json
+
+  actor User @relation("UserAuditLogs", fields: [actor_user_id], references: [id])
+
+  @@map("audit_log")
+}
