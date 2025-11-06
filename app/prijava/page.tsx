@@ -1,10 +1,12 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function PrijavaPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const router = useRouter();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -15,7 +17,11 @@ export default function PrijavaPage() {
       body: JSON.stringify({ email, password }),
     });
     const data = await res.json();
-    if (res.ok) setMsg(`Prijava uspešna (demo): ${data.message}`);
+    if (res.ok) {
+      setMsg(`Prijava uspešna (demo): ${data.message}`);
+      router.push("/moj-profil");
+      return;
+    }
     else setMsg(`Napaka: ${data.error || "Neznana napaka"}`);
   }
 

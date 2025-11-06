@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { cookies } from 'next/headers'
 import { prisma } from '../lib/prisma'
 
 function CheckIcon() {
@@ -9,7 +10,7 @@ function CheckIcon() {
   )
 }
 
-function Header() {
+function Header({ loggedIn }: { loggedIn: boolean }) {
   return (
     <header className="sticky top-0 z-10 border-b bg-white/90 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
@@ -18,8 +19,17 @@ function Header() {
           <a href="#urnik" className="font-medium hover:text-gray-900">Urnik</a>
         </nav>
         <div className="flex items-center gap-3">
-          <Link href="/prijava" className="rounded-xl border px-3 py-1.5 text-xs font-medium hover:bg-gray-50">Prijava</Link>
-          <Link href="/registracija" className="rounded-xl bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-black">Registracija</Link>
+          {loggedIn ? (
+            <>
+              <Link href="/moj-profil" className="rounded-xl border px-3 py-1.5 text-xs font-medium hover:bg-gray-50">Moj profil</Link>
+              <a href="/api/logout" className="rounded-xl bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-black">Odjava</a>
+            </>
+          ) : (
+            <>
+              <Link href="/prijava" className="rounded-xl border px-3 py-1.5 text-xs font-medium hover:bg-gray-50">Prijava</Link>
+              <Link href="/registracija" className="rounded-xl bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-black">Registracija</Link>
+            </>
+          )}
         </div>
       </div>
     </header>
@@ -59,6 +69,7 @@ function GroupClassCard({ c }: { c: { id: bigint; title: string; about: string; 
 }
 
 export default async function Page() {
+  const loggedIn = Boolean(cookies().get('uid')?.value)
   const [plansRaw, classTypes] = await Promise.all([
     prisma.membershipPlan.findMany({ where: { is_active: true }, orderBy: { price_eur: 'asc' } }),
     prisma.classType.findMany({ orderBy: { id: 'asc' }, take: 6 })
@@ -109,7 +120,7 @@ export default async function Page() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
-      <Header />
+      <Header loggedIn={loggedIn} />
       <section className="border-b bg-white">
         <div className="mx-auto max-w-7xl px-4 py-16 text-center">
           <h1 className="text-3xl font-extrabold md:text-4xl">Dobrodošli na strani fitnes WiiFit</h1>

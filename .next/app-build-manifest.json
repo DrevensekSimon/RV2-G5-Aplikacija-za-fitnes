@@ -1,5 +1,15 @@
 {
   "pages": {
+    "/moj-profil/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/moj-profil/page.js"
+    ],
+    "/moj-profil/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/moj-profil/layout.js"
+    ],
     "/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -16,10 +26,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/prijava/page.js"
     ],
-    "/registracija/page": [
+    "/prijava/layout": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/registracija/page.js"
+      "static/chunks/app/prijava/layout.js"
+    ],
+    "/rezervacija-trenerja/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/rezervacija-trenerja/page.js"
+    ],
+    "/rezervacija-trenerja/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/rezervacija-trenerja/layout.js"
+    ],
+    "/moj-profil/narocnina/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/moj-profil/narocnina/page.js"
     ]
   }
 }

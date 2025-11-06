@@ -1,6 +1,10 @@
 {
-  "/prijava/page": "app/prijava/page.js",
-  "/api/register/route": "app/api/register/route.js",
   "/page": "app/page.js",
-  "/registracija/page": "app/registracija/page.js"
+  "/api/pt/book/route": "app/api/pt/book/route.js",
+  "/api/subscription/change/route": "app/api/subscription/change/route.js",
+  "/api/subscription/cancel/route": "app/api/subscription/cancel/route.js",
+  "/prijava/page": "app/prijava/page.js",
+  "/moj-profil/page": "app/moj-profil/page.js",
+  "/moj-profil/narocnina/page": "app/moj-profil/narocnina/page.js",
+  "/rezervacija-trenerja/page": "app/rezervacija-trenerja/page.js"
 }
