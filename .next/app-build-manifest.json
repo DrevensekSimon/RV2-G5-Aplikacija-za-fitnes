@@ -1,5 +1,16 @@
 {
   "pages": {
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
     "/moj-profil/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -10,16 +21,20 @@
       "static/chunks/main-app.js",
       "static/chunks/app/moj-profil/layout.js"
     ],
-    "/layout": [
+    "/moj-profil/narocnina/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/layout.css",
-      "static/chunks/app/layout.js"
+      "static/chunks/app/moj-profil/narocnina/page.js"
     ],
-    "/page": [
+    "/registracija/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/page.js"
+      "static/chunks/app/registracija/page.js"
+    ],
+    "/registracija/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/registracija/layout.js"
     ],
     "/prijava/page": [
       "static/chunks/webpack.js",
@@ -31,20 +46,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/prijava/layout.js"
     ],
-    "/rezervacija-trenerja/page": [
+    "/urnik-dnevni/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/rezervacija-trenerja/page.js"
+      "static/chunks/app/urnik-dnevni/page.js"
     ],
-    "/rezervacija-trenerja/layout": [
+    "/urnik-tedenski/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/rezervacija-trenerja/layout.js"
+      "static/chunks/app/urnik-tedenski/page.js"
     ],
-    "/moj-profil/narocnina/page": [
+    "/urnik-dnevni/[date]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/moj-profil/narocnina/page.js"
+      "static/chunks/app/urnik-dnevni/[date]/page.js"
+    ],
+    "/beljakovinski-urnik/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/beljakovinski-urnik/page.js"
     ]
   }
 }

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { addDays, format, startOfDay, subDays } from "date-fns";
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { addWeeks, subWeeks, startOfWeek, format, addDays } from "date-fns";
 import { sl } from "date-fns/locale";
 
 const times = [
@@ -10,130 +11,149 @@ const times = [
   "18:00", "19:00", "20:00", "21:00"
 ];
 
-// Example static sessions
-const sampleSessions = [
-  { time: "09:00", title: "HIIT", trainer: "Marko" },
-  { time: "12:00", title: "Yoga", trainer: "Ana" },
-  { time: "18:00", title: "Pilates", trainer: "Sara" }
-];
+type FetchedSession = {
+  id: string;
+  start_at: string; // ISO
+  title: string;
+  trainer: string;
+  location: string;
+};
 
-export default function DailySchedule() {
-  const [currentDay, setCurrentDay] = useState(startOfDay(new Date()));
-  const [selectedSession, setSelectedSession] = useState<{ time: string; day: string; title?: string } | null>(null);
-  const [showModal, setShowModal] = useState(false);
-  const [sessions, setSessions] = useState<{ time: string; title: string; trainer: string }[]>([]);
-
-  // Add sample sessions
-  const addSampleSessions = () => {
-    setSessions(sampleSessions);
-  };
+export default function WeeklySchedule() {
+  const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
+  const [sessions, setSessions] = useState<FetchedSession[]>([]);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [isTrainer, setIsTrainer] = useState(false);
 
   useEffect(() => {
-    addSampleSessions();
-  }, [currentDay]);
+    const fetchWeek = async () => {
+      setLoading(true);
+      try {
+        const from = new Date(currentWeek);
+        const to = new Date(addDays(currentWeek, 7));
+        const res = await fetch(`/api/sessions?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`);
+        if (!res.ok) throw new Error('Failed to load');
+        const json = await res.json();
+        setSessions(json.sessions || []);
+      } catch (e) {
+        setSessions([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchWeek();
+  }, [currentWeek]);
 
-  const handleClick = (time: string) => {
-    const session = sessions.find((s) => s.time === time);
-    setSelectedSession({
-      day: format(currentDay, "EEEE dd.MM.yyyy", { locale: sl }),
-      time,
-      title: session?.title
-    });
-    setShowModal(true);
+  useEffect(() => {
+    const fetchMe = async () => {
+      try {
+        const res = await fetch('/api/me');
+        const json = await res.json();
+        setIsTrainer((json?.user?.role || '').toLowerCase() === 'trainer' || (json?.user?.role || '').toLowerCase() === 'trener');
+      } catch {}
+    };
+    fetchMe();
+  }, []);
+
+  const sessionsByDayTime = useMemo(() => {
+    const map = new Map<string, Map<string, FetchedSession>>(); // date -> time -> session
+    for (const s of sessions) {
+      const dt = new Date(s.start_at);
+      const yyyy = dt.getFullYear();
+      const mm = String(dt.getMonth() + 1).padStart(2, '0');
+      const dd = String(dt.getDate()).padStart(2, '0');
+      const key = `${yyyy}-${mm}-${dd}`;
+      const hh = String(dt.getHours()).padStart(2, '0');
+      const mi = String(dt.getMinutes()).padStart(2, '0');
+      const time = `${hh}:${mi}`;
+      const inner = map.get(key) || new Map<string, FetchedSession>();
+      inner.set(time, s);
+      map.set(key, inner);
+    }
+    return map;
+  }, [sessions]);
+
+  const gotoDaily = (d: Date) => {
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    router.push(`/urnik-dnevni/${yyyy}-${mm}-${dd}`);
   };
 
-  const nextDay = () => setCurrentDay(addDays(currentDay, 1));
-  const prevDay = () => setCurrentDay(subDays(currentDay, 1));
+  const nextWeek = () => setCurrentWeek(addWeeks(currentWeek, 1));
+  const prevWeek = () => setCurrentWeek(subWeeks(currentWeek, 1));
+
+  const days = Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i));
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center p-6">
-      {/* Header with buttons */}
-      <div className="flex justify-between w-full max-w-7xl mb-6">
-        <h1 className="text-2xl font-bold">Dnevni urnik</h1>
+      {/* Header */}
+      <div className="flex justify-between w-full max-w-6xl mb-6">
+        <h1 className="text-2xl font-bold">Tedenski urnik</h1>
         <div className="flex gap-3">
-          <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-blue-700">
-            Dodaj skupinsko vadbo
-          </button>
-          <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-green-700">
-            Dodaj termin
-          </button>
-          <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">
-            Rezerviraj trenerja
-          </button>
+          {isTrainer ? (
+            <>
+              <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-blue-700">Dodaj skupinsko vadbo</button>
+              <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-green-700">Dodaj termin</button>
+            </>
+          ) : (
+            <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">Rezerviraj trenerja</button>
+          )}
         </div>
       </div>
 
-      {/* Day Navigation */}
-      <div className="flex items-center justify-center w-full max-w-7xl mb-4">
-        <button onClick={prevDay} className="text-gray-500 text-lg px-4 hover:text-black">‹</button>
-        <h2 className="text-lg font-semibold mx-4">
-          {format(currentDay, "EEEE, dd MMMM yyyy", { locale: sl })}
+      {/* Calendar Navigation */}
+      <div className="flex items-center justify-center w-full max-w-6xl mb-4">
+        <button onClick={prevWeek} className="text-gray-500 text-lg px-4 hover:text-black">‹</button>
+        <h2 className="text-lg font-semibold">
+          {format(currentWeek, "MMMM yyyy", { locale: sl })}
         </h2>
-        <button onClick={nextDay} className="text-gray-500 text-lg px-4 hover:text-black">›</button>
+        <button onClick={nextWeek} className="text-gray-500 text-lg px-4 hover:text-black">›</button>
       </div>
 
       {/* Schedule Grid */}
-      <div className="grid grid-cols-[80px_1fr] w-full max-w-7xl border border-gray-200">
-        {/* Hour column */}
-        <div className="flex flex-col">
+      <div className="grid grid-cols-8 w-full max-w-6xl border border-gray-200">
+        {/* Time column */}
+        <div className="border-r border-gray-200 bg-gray-50 text-sm font-medium text-gray-600">
           {times.map((t) => (
-            <div
-              key={t}
-              className="h-16 flex items-center justify-center border-b border-gray-200 text-sm font-medium text-gray-600 bg-gray-50"
-            >
+            <div key={t} className="h-16 flex items-center justify-center border-b border-gray-200">
               {t}
             </div>
           ))}
         </div>
 
-        {/* Time slots column */}
-        <div className="flex flex-col">
-          {times.map((time, i) => {
-            const session = sessions.find((s) => s.time === time);
-            return (
+        {/* Day columns */}
+        {days.map((day) => {
+          const yyyy = day.getFullYear();
+          const mm = String(day.getMonth() + 1).padStart(2, '0');
+          const dd = String(day.getDate()).padStart(2, '0');
+          const dkey = `${yyyy}-${mm}-${dd}`;
+          return (
+            <div key={day.toISOString()} className="border-r border-gray-200">
               <div
-                key={i}
-                className={`h-16 border-b border-gray-200 flex items-center justify-center text-sm cursor-pointer transition
-                  ${session ? "bg-yellow-100 text-gray-900 font-semibold" : "text-gray-400 hover:bg-gray-100"}`}
-                onClick={() => handleClick(time)}
+                className="h-12 flex items-center justify-center font-semibold border-b border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100"
+                onClick={() => gotoDaily(day)}
               >
-                {session ? `${session.title} (${session.trainer})` : "No Session"}
+                {format(day, "EEE dd", { locale: sl })}
               </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Booking Confirmation Modal */}
-      {showModal && selectedSession && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-xl p-6 shadow-lg w-80">
-            <h3 className="text-lg font-semibold mb-2">Potrditev</h3>
-            <p className="text-sm text-gray-700 mb-6">
-              {selectedSession.title
-                ? `Ali se želiš prijaviti na ${selectedSession.title} (${selectedSession.day} ob ${selectedSession.time})?`
-                : `Ali se želiš prijaviti na vadbo HIIT (${selectedSession.day} ob ${selectedSession.time})?`}
-            </p>
-            <div className="flex justify-end space-x-3">
-              <button
-                className="px-4 py-2 border rounded-md text-gray-700 hover:bg-gray-100"
-                onClick={() => setShowModal(false)}
-              >
-                Ne
-              </button>
-              <button
-                className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800"
-                onClick={() => {
-                  alert(`Prijavljen na ${selectedSession.title || "HIIT"} ob ${selectedSession.time} (${selectedSession.day})`);
-                  setShowModal(false);
-                }}
-              >
-                Da
-              </button>
+              {times.map((time, i) => {
+                const session = sessionsByDayTime.get(dkey)?.get(time);
+                return (
+                  <div
+                    key={i}
+                    className={`h-16 flex items-center justify-center border-b border-gray-100 text-sm cursor-pointer transition ${session ? "bg-yellow-100 text-gray-900 font-semibold" : "text-gray-400 hover:bg-gray-100"}`}
+                    onClick={() => gotoDaily(day)}
+                  >
+                    {session ? `${session.title}${session.trainer ? ` (${session.trainer})` : ''}` : "No Session"}
+                  </div>
+                );
+              })}
             </div>
-          </div>
-        </div>
-      )}
+          );
+        })}
+      </div>
+      {loading ? <div className="mt-4 text-sm text-gray-600">Nalaganje ...</div> : null}
     </div>
   );
 }

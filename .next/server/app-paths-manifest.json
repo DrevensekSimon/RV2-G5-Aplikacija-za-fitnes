@@ -1,10 +1,9 @@
 {
+  "/urnik-tedenski/page": "app/urnik-tedenski/page.js",
+  "/urnik-dnevni/[date]/page": "app/urnik-dnevni/[date]/page.js",
   "/page": "app/page.js",
-  "/api/pt/book/route": "app/api/pt/book/route.js",
-  "/api/subscription/change/route": "app/api/subscription/change/route.js",
-  "/api/subscription/cancel/route": "app/api/subscription/cancel/route.js",
-  "/prijava/page": "app/prijava/page.js",
-  "/moj-profil/page": "app/moj-profil/page.js",
-  "/moj-profil/narocnina/page": "app/moj-profil/narocnina/page.js",
-  "/rezervacija-trenerja/page": "app/rezervacija-trenerja/page.js"
+  "/urnik-dnevni/page": "app/urnik-dnevni/page.js",
+  "/api/me/route": "app/api/me/route.js",
+  "/beljakovinski-urnik/page": "app/beljakovinski-urnik/page.js",
+  "/api/sessions/route": "app/api/sessions/route.js"
 }
