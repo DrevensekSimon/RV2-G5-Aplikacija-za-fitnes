@@ -11,21 +11,6 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/moj-profil/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/moj-profil/page.js"
-    ],
-    "/moj-profil/layout": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/moj-profil/layout.js"
-    ],
-    "/moj-profil/narocnina/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/chunks/app/moj-profil/narocnina/page.js"
-    ],
     "/registracija/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
@@ -46,10 +31,30 @@
       "static/chunks/main-app.js",
       "static/chunks/app/prijava/layout.js"
     ],
-    "/urnik-dnevni/page": [
+    "/moj-profil/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/urnik-dnevni/page.js"
+      "static/chunks/app/moj-profil/page.js"
+    ],
+    "/moj-profil/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/moj-profil/layout.js"
+    ],
+    "/nadzorna-plosca/stranke/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/nadzorna-plosca/stranke/page.js"
+    ],
+    "/nadzorna-plosca/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/nadzorna-plosca/page.js"
+    ],
+    "/nadzorna-plosca/skupinske-vadbe/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/nadzorna-plosca/skupinske-vadbe/page.js"
     ],
     "/urnik-tedenski/page": [
       "static/chunks/webpack.js",
@@ -61,10 +66,25 @@
       "static/chunks/main-app.js",
       "static/chunks/app/urnik-dnevni/[date]/page.js"
     ],
-    "/beljakovinski-urnik/page": [
+    "/moj-profil/narocnina/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/beljakovinski-urnik/page.js"
+      "static/chunks/app/moj-profil/narocnina/page.js"
+    ],
+    "/beljakovinski-kalkulator/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/beljakovinski-kalkulator/page.js"
+    ],
+    "/rezervacija-trenerja/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/rezervacija-trenerja/page.js"
+    ],
+    "/rezervacija-trenerja/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/rezervacija-trenerja/layout.js"
     ]
   }
 }

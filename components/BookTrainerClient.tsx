@@ -20,8 +20,10 @@ export default function BookTrainerClient({ trainerId, slots }: { trainerId: str
         body: JSON.stringify({ trainerId, startAtIso: selected })
       });
       const data = await res.json().catch(() => ({}));
+      if (res.status === 401) throw new Error("Prosimo, se prijavite za rezervacijo");
       if (!res.ok) throw new Error(data?.error || "Napaka pri rezervaciji");
-      setMsg("Rezervacija shranjena.");
+      setMsg("Rezervacija shranjena!");
+      setSelected(null);
     } catch (e: any) {
       setMsg(e.message || "Napaka");
     } finally {

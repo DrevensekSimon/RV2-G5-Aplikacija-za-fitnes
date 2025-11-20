@@ -11,31 +11,6 @@ function formatTime(d: Date) {
   }
 }
 
-function Header({ loggedIn }: { loggedIn: boolean }) {
-  return (
-    <header className="sticky top-0 z-10 border-b bg-white/90 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4">
-        <nav className="flex items-center gap-6 text-sm">
-          <Link href="/" className="font-medium hover:text-gray-900">Ponudba</Link>
-          <a href="/#urnik" className="font-medium hover:text-gray-900">Urnik</a>
-        </nav>
-        <div className="flex items-center gap-3">
-          {loggedIn ? (
-            <>
-              <Link href="/moj-profil" className="rounded-xl border px-3 py-1.5 text-xs font-medium hover:bg-gray-50">Moj profil</Link>
-              <a href="/api/logout" className="rounded-xl bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-black">Odjava</a>
-            </>
-          ) : (
-            <>
-              <Link href="/prijava" className="rounded-xl border px-3 py-1.5 text-xs font-medium hover:bg-gray-50">Prijava</Link>
-              <Link href="/registracija" className="rounded-xl bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-black">Registracija</Link>
-            </>
-          )}
-        </div>
-      </div>
-    </header>
-  );
-}
 
 export default async function RezervacijaTrenerjaPage() {
   const loggedIn = Boolean(cookies().get('uid')?.value);
@@ -58,8 +33,6 @@ export default async function RezervacijaTrenerjaPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-900">
-      <Header loggedIn={loggedIn} />
-
       <div className="mx-auto max-w-6xl px-4 py-10">
         <h1 className="text-2xl font-extrabold">Rezervacija trenerja</h1>
 

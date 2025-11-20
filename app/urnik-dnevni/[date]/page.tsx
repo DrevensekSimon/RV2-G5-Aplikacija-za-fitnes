@@ -103,8 +103,8 @@ export default function DailyScheduleByDate() {
               <button className="bg-black text-white px-4 py-2 rounded-md">Dodaj skupinsko vadbo</button>
               <button className="bg-black text-white px-4 py-2 rounded-md">Dodaj termin</button>
             </>
-          ) : (
-            <button className="bg-black text-white px-4 py-2 rounded-md">Rezerviraj trenerja</button>
+         ) : (
+            <button onClick={() => router.push('/rezervacija-trenerja')} className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">Rezerviraj trenerja</button>
           )}
         </div>
       </div>

@@ -5,6 +5,7 @@ export default function RegistracijaPage() {
   const [form, setForm] = useState({
     email: "",
     username: "",
+    password: "",
     first_name: "",
     last_name: "",
     phone: ""
@@ -18,6 +19,10 @@ export default function RegistracijaPage() {
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
     setMsg(null);
+    if (form.password.length < 6) {
+      setMsg("Geslo mora imeti najmanj 6 znakov.");
+      return;
+    }
     const res = await fetch("/api/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -35,6 +40,7 @@ export default function RegistracijaPage() {
         <form onSubmit={onSubmit} className="mt-6 space-y-4 text-left">
           <input type="email" placeholder="E-pošta" value={form.email} onChange={(e)=>update("email", e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" required />
           <input type="text" placeholder="Uporabniško ime" value={form.username} onChange={(e)=>update("username", e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" required />
+          <input type="password" placeholder="Geslo (min. 6 znakov)" value={form.password} onChange={(e)=>update("password", e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" required />
           <div className="grid grid-cols-2 gap-3">
             <input type="text" placeholder="Ime" value={form.first_name} onChange={(e)=>update("first_name", e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" required />
             <input type="text" placeholder="Priimek" value={form.last_name} onChange={(e)=>update("last_name", e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" required />

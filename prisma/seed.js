@@ -1,4 +1,5 @@
 const { PrismaClient } = require('@prisma/client')
+const bcrypt = require('bcryptjs')
 const prisma = new PrismaClient()
 
 async function ensureRoles() {
@@ -51,11 +52,19 @@ async function seedPlans() {
 
 async function seedClassTypes() {
   const count = await prisma.classType.count()
-  if (count === 0) {
-    await prisma.classType.createMany({ data: [
+  if (count < 4) {
+    const existing = await prisma.classType.findMany()
+    const existingNames = existing.map(c => c.name)
+    const newClasses = [
       { name: 'HIIT Blast', description: 'Visoko intenzivni intervalni trening.', default_duration_min: 45 },
-      { name: 'Yoga Flow', description: 'Sproščena vadba za gibljivost in ravnovesje.', default_duration_min: 60 }
-    ] })
+      { name: 'Yoga Flow', description: 'Sproščena vadba za gibljivost in ravnovesje.', default_duration_min: 60 },
+      { name: 'Spin Cycle', description: 'Intenzivna vadba na stacionarnih kolesih.', default_duration_min: 50 },
+      { name: 'Zumba Dance', description: 'Zabavna ples vadba s hitro glasbo.', default_duration_min: 55 }
+    ].filter(c => !existingNames.includes(c.name))
+    
+    if (newClasses.length > 0) {
+      await prisma.classType.createMany({ data: newClasses })
+    }
   }
 }
 
@@ -74,10 +83,12 @@ async function ensureTrainer() {
   let user = await prisma.user.findUnique({ where: { email } })
   if (!user) {
     const trainerRole = await prisma.role.findFirst({ where: { name: 'trainer' } })
+    const hashedPassword = await bcrypt.hash('trener123', 10)
     user = await prisma.user.create({
       data: {
         email,
         username: 'trener',
+        password: hashedPassword,
         first_name: 'Janez',
         last_name: 'Trener',
         phone: '000-000-000',
@@ -93,19 +104,21 @@ async function ensureTrainer() {
 // Ensure at least 3 trainers exist, returns array of trainer users
 async function ensureThreeTrainers() {
   const desired = [
-    { email: 'trener1@example.com', username: 'trener1', first_name: 'Maja', last_name: 'Novak' },
-    { email: 'trener2@example.com', username: 'trener2', first_name: 'Luka', last_name: 'Kovač' },
-    { email: 'trener3@example.com', username: 'trener3', first_name: 'Eva',  last_name: 'Horvat' },
+    { email: 'maja@trener.com', username: 'trener1', first_name: 'Maja', last_name: 'Novak', password: 'maja123' },
+    { email: 'luka@trener.com', username: 'trener2', first_name: 'Luka', last_name: 'Kovač', password: 'luka123' },
+    { email: 'eva@trener.com', username: 'trener3', first_name: 'Eva',  last_name: 'Horvat', password: 'eva123' },
   ]
   const trainerRole = await prisma.role.findFirst({ where: { name: 'trainer' } })
   const created = []
   for (const t of desired) {
     let user = await prisma.user.findUnique({ where: { email: t.email } })
     if (!user) {
+      const hashedPassword = await bcrypt.hash(t.password, 10)
       user = await prisma.user.create({
         data: {
           email: t.email,
           username: t.username,
+          password: hashedPassword,
           first_name: t.first_name,
           last_name: t.last_name,
           phone: '000-000-000',
@@ -162,10 +175,12 @@ async function ensureMemberUser() {
   let user = await prisma.user.findUnique({ where: { email } })
   if (!user) {
     const memberRole = await prisma.role.findFirst({ where: { name: 'member' } })
+    const hashedPassword = await bcrypt.hash('demo123', 10)
     user = await prisma.user.create({
       data: {
         email,
         username: 'demo',
+        password: hashedPassword,
         first_name: 'Ana',
         last_name: 'Uporabnik',
         phone: '031 456 789',
@@ -210,6 +225,42 @@ async function seedMemberRegistrations(userId) {
   }
 }
 
+// Create additional demo members
+async function ensureAdditionalMembers() {
+  const memberRole = await prisma.role.findFirst({ where: { name: 'member' } })
+  const members = [
+    { email: 'marko@example.com', username: 'marko', password: 'marko123', first_name: 'Marko', last_name: 'Novak' },
+    { email: 'petra@example.com', username: 'petra', password: 'petra123', first_name: 'Petra', last_name: 'Horvat' },
+    { email: 'janez@example.com', username: 'janez', password: 'janez123', first_name: 'Janez', last_name: 'Kovač' },
+  ]
+  
+  for (const m of members) {
+    let user = await prisma.user.findUnique({ where: { email: m.email } })
+    if (!user) {
+      try {
+        const hashedPassword = await bcrypt.hash(m.password, 10)
+        user = await prisma.user.create({
+          data: {
+            email: m.email,
+            username: m.username,
+            password: hashedPassword,
+            first_name: m.first_name,
+            last_name: m.last_name,
+            phone: '000-000-000',
+            role_id: memberRole.id,
+            is_active: true,
+          }
+        })
+        // Add subscription and registrations
+        const sub = await ensureActiveSubscription(user.id)
+        await seedMemberRegistrations(user.id)
+      } catch (e) {
+        console.log(`Member ${m.email} already exists, skipping`)
+      }
+    }
+  }
+}
+
 async function main() {
   await ensureRoles()
   await seedPlans()
@@ -239,6 +290,8 @@ async function main() {
     }
   }
   await seedMemberRegistrations(memberUser.id)
+  // Seed additional members
+  await ensureAdditionalMembers()
 }
 
 main()

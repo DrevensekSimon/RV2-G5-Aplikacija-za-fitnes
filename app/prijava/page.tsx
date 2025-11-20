@@ -31,7 +31,7 @@ export default function PrijavaPage() {
         <h1 className="text-2xl font-extrabold">Prijava</h1>
         <form onSubmit={onSubmit} className="mt-6 space-y-4">
           <input type="email" placeholder="E-pošta" value={email} onChange={(e)=>setEmail(e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" required />
-          <input type="password" placeholder="Geslo (demo)" value={password} onChange={(e)=>setPassword(e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" />
+          <input type="password" placeholder="Geslo" value={password} onChange={(e)=>setPassword(e.target.value)} className="w-full rounded-xl border px-3 py-2 text-sm" required />
           <button className="w-full rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white hover:bg-black">Prijava</button>
         </form>
         {msg && <p className="mt-4 text-sm">{msg}</p>}

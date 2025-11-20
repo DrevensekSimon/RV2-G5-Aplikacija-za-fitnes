@@ -98,7 +98,7 @@ export default function WeeklySchedule() {
               <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-green-700">Dodaj termin</button>
             </>
           ) : (
-            <button className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">Rezerviraj trenerja</button>
+            <button onClick={() => router.push('/rezervacija-trenerja')} className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800">Rezerviraj trenerja</button>
           )}
         </div>
       </div>
@@ -132,7 +132,7 @@ export default function WeeklySchedule() {
           return (
             <div key={day.toISOString()} className="border-r border-gray-200">
               <div
-                className="h-12 flex items-center justify-center font-semibold border-b border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100"
+                className="h-16 flex items-center justify-center font-semibold border-b border-gray-200 bg-gray-50 cursor-pointer hover:bg-gray-100"
                 onClick={() => gotoDaily(day)}
               >
                 {format(day, "EEE dd", { locale: sl })}

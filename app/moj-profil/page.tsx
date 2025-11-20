@@ -175,16 +175,6 @@ export default async function MojProfilPage() {
                 </div>
               </div>
             </section>
-
-            <section className="flex items-center justify-between rounded-2xl border bg-white p-6 shadow-sm">
-              <div>
-                <div className="text-sm font-semibold">Notifikacije</div>
-                <div className="text-xs text-gray-500">(demo stikalo)</div>
-              </div>
-              <button className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200">
-                <span className="inline-block h-5 w-5 translate-x-1 transform rounded-full bg-white shadow" />
-              </button>
-            </section>
           </aside>
         </div>
       </div>
