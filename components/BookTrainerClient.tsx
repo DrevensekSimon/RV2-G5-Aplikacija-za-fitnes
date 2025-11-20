@@ -1,7 +1,15 @@
 "use client";
 import { useState } from "react";
 
-export default function BookTrainerClient({ trainerId, slots }: { trainerId: string | null; slots: { iso: string; label: string }[] }) {
+interface BookTrainerClientProps {
+  trainerId: string | null;
+  slots: { iso: string; label: string }[];
+  bookDate?: Date; // Optional date for direct booking from schedule
+  onSuccess?: () => void; // Callback after successful booking
+  redirectUrl?: string; // URL to redirect after booking
+}
+
+export default function BookTrainerClient({ trainerId, slots, bookDate, onSuccess, redirectUrl }: BookTrainerClientProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [msg, setMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -14,16 +22,37 @@ export default function BookTrainerClient({ trainerId, slots }: { trainerId: str
     setLoading(true);
     setMsg(null);
     try {
+      // If bookDate is provided, construct ISO string for that day at selected time
+      let startAtIso = selected;
+      if (bookDate && /^([0-2]\d):([0-5]\d)$/.test(selected)) {
+        const [hours, minutes] = selected.split(':').map(Number);
+        const d = new Date(bookDate);
+        d.setHours(hours, minutes, 0, 0);
+        startAtIso = d.toISOString();
+      }
+      
       const res = await fetch("/api/pt/book", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ trainerId, startAtIso: selected })
+        body: JSON.stringify({ trainerId, startAtIso })
       });
       const data = await res.json().catch(() => ({}));
       if (res.status === 401) throw new Error("Prosimo, se prijavite za rezervacijo");
-      if (!res.ok) throw new Error(data?.error || "Napaka pri rezervaciji");
+      if (res.status === 400) throw new Error(data?.error || "Neveljaven termin");
+      if (res.status !== 201 && !res.ok) throw new Error(data?.error || "Napaka pri rezervaciji");
       setMsg("Rezervacija shranjena!");
       setSelected(null);
+      
+      // Redirect if URL provided
+      if (redirectUrl) {
+        setTimeout(() => {
+          window.location.href = redirectUrl;
+        }, 1000);
+      } else if (onSuccess) {
+        setTimeout(() => {
+          onSuccess();
+        }, 500);
+      }
     } catch (e: any) {
       setMsg(e.message || "Napaka");
     } finally {

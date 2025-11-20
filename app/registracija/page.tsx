@@ -1,7 +1,9 @@
 "use client";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function RegistracijaPage() {
+  const router = useRouter();
   const [form, setForm] = useState({
     email: "",
     username: "",
@@ -29,7 +31,10 @@ export default function RegistracijaPage() {
       body: JSON.stringify(form),
     });
     const data = await res.json();
-    if (res.ok) setMsg(`Ustvarjen uporabnik: ${data.user.email}`);
+    if (res.ok) {
+      setMsg(`Ustvarjen uporabnik: ${data.user.email}`);
+      setTimeout(() => router.push("/prijava"), 1500);
+    }
     else setMsg(`Napaka: ${data.error || "Neznana napaka"}`);
   }
 

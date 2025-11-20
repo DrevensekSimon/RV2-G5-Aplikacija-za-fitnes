@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { cookies } from "next/headers";
 import { prisma } from "../../lib/prisma";
-import BookTrainerClient from "../../components/BookTrainerClient";
+import TrainerCard from "@/components/TrainerCard";
 
 function formatTime(d: Date) {
   try {
@@ -45,21 +45,13 @@ export default async function RezervacijaTrenerjaPage() {
               ? dates.map((d) => ({ iso: d.toISOString(), label: formatTime(d) }))
               : (["09:00", "10:00", "11:00", "14:00", "15:00"].map((lbl) => ({ iso: '', label: lbl })) as { iso: string; label: string }[]);
             return (
-              <section key={t ? t.user_id : `placeholder-${idx}`} className="rounded-2xl border bg-white p-6 shadow-sm">
-                <div className="flex items-start gap-4">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
-                    <svg viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5"><path d="M12 2a5 5 0 100 10 5 5 0 000-10zM2 22a10 10 0 1120 0H2z"/></svg>
-                  </div>
-                  <div className="flex-1">
-                    <div className="text-lg font-semibold">{name}</div>
-                    <p className="mt-2 text-sm text-gray-600">{bio}</p>
-                    <div className="mt-4">
-                      <div className="text-sm font-semibold">Proste ure</div>
-                      <BookTrainerClient trainerId={t ? t.user_id : null} slots={slots} />
-                    </div>
-                  </div>
-                </div>
-              </section>
+              <TrainerCard
+                key={t ? t.user_id : `placeholder-${idx}`}
+                trainerId={t ? t.user_id : null}
+                name={name}
+                bio={bio}
+                slots={slots}
+              />
             )
           })}
         </div>

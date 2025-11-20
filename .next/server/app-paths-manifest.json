@@ -1,12 +1,12 @@
 {
-  "/api/me/route": "app/api/me/route.js",
   "/urnik-tedenski/page": "app/urnik-tedenski/page.js",
+  "/urnik-dnevni/[date]/page": "app/urnik-dnevni/[date]/page.js",
+  "/api/sessions/route": "app/api/sessions/route.js",
+  "/api/me/route": "app/api/me/route.js",
+  "/api/trainers/route": "app/api/trainers/route.js",
   "/page": "app/page.js",
-  "/api/admin/dashboard-stats/route": "app/api/admin/dashboard-stats/route.js",
-  "/nadzorna-plosca/page": "app/nadzorna-plosca/page.js",
-  "/nadzorna-plosca/stranke/page": "app/nadzorna-plosca/stranke/page.js",
-  "/api/admin/members/route": "app/api/admin/members/route.js",
-  "/nadzorna-plosca/skupinske-vadbe/page": "app/nadzorna-plosca/skupinske-vadbe/page.js",
-  "/api/admin/group-classes/route": "app/api/admin/group-classes/route.js",
-  "/registracija/page": "app/registracija/page.js"
+  "/api/pt/session/[id]/route": "app/api/pt/session/[id]/route.js",
+  "/api/pt/book/route": "app/api/pt/book/route.js",
+  "/moj-profil/page": "app/moj-profil/page.js",
+  "/rezervacija-trenerja/page": "app/rezervacija-trenerja/page.js"
 }

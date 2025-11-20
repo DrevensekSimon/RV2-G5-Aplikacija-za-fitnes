@@ -1,13 +1,16 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
+import dynamic from 'next/dynamic'
+
+const ChartsWrapper = dynamic(() => import('@/components/ChartsWrapper'), { ssr: false, loading: () => <div className="h-64 bg-gray-100 rounded animate-pulse"></div> })
 
 interface DashboardStats {
   totalUsers: number
   newMembers: number
   totalRevenue: string
   totalClasses: number
-  membersByClass: Array<{ name: string; count: number }>
+  membersByClass: Array<{ session_id: string; _count: { session_id: number } }>
   recentActivity: Array<{ time: string; action: string }>
 }
 
@@ -54,10 +57,10 @@ export default function AdminDashboard() {
 
         {/* Stats Overview */}
         <div className="grid gap-6 md:grid-cols-4 mb-8">
-          <div className="rounded-lg bg-white p-6 shadow">
+          <div className="rounded-lg bg-white p-6 shadow cursor-pointer hover:shadow-lg transition" onClick={() => window.location.href = '/nadzorna-plosca/stranke'}>
             <div className="text-sm font-medium text-gray-600">Vsi člani</div>
             <div className="mt-2 text-3xl font-bold text-gray-900">{stats.totalUsers}</div>
-            <button className="mt-4 text-sm text-blue-600 hover:text-blue-800">Pregled nad strankami</button>
+            <button className="mt-4 text-sm text-gray-900 hover:text-black font-medium">Pregled nad strankami</button>
           </div>
 
           <div className="rounded-lg bg-white p-6 shadow">
@@ -78,32 +81,9 @@ export default function AdminDashboard() {
 
         {/* Charts Section */}
         <div className="grid gap-6 md:grid-cols-2 mb-8">
-          {/* Line Chart Placeholder */}
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h3 className="font-semibold text-gray-900 mb-4">Člani</h3>
-            <p className="text-sm text-gray-600">Novi člani in Obstoječi člani</p>
-            <div className="mt-4 h-40 bg-gray-100 rounded flex items-center justify-center">
-              <span className="text-gray-500">Grafikon nalaganja...</span>
-            </div>
-          </div>
-
-          {/* Pie Chart Placeholder */}
-          <div className="rounded-lg bg-white p-6 shadow">
-            <h3 className="font-semibold text-gray-900 mb-4">Porazdelitev udeležencev po vadbi</h3>
-            <p className="text-sm text-gray-600">Po vadbi</p>
-            <div className="mt-4 h-40 bg-gray-100 rounded flex items-center justify-center">
-              <span className="text-gray-500">Grafikon nalaganja...</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Bar Chart */}
-        <div className="rounded-lg bg-white p-6 shadow mb-8">
-          <h3 className="font-semibold text-gray-900 mb-4">Prihodi po tipih</h3>
-          <p className="text-sm text-gray-600">Porazdelitev po vrsti storitve</p>
-          <div className="mt-4 h-40 bg-gray-100 rounded flex items-center justify-center">
-            <span className="text-gray-500">Grafikon nalaganja...</span>
-          </div>
+          <Suspense fallback={<div className="h-64 bg-gray-100 rounded animate-pulse"></div>}>
+            <ChartsWrapper membersByClass={(stats as any).membersByClass} />
+          </Suspense>
         </div>
 
         {/* Recent Activity */}

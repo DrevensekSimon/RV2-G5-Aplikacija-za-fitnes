@@ -46,7 +46,6 @@ export default async function RootLayout({
             <div className="flex items-center gap-3">
               {loggedIn ? (
                 <>
-                  <span className="text-xs text-gray-600">{user?.first_name} {user?.last_name}</span>
                   <a href="/api/logout" className="rounded-xl bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white hover:bg-black">Odjava</a>
                 </>
               ) : (

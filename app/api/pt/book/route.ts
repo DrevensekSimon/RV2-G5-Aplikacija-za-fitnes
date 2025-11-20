@@ -7,11 +7,11 @@ function parseStart(startAtIsoOrTime: string): Date | null {
   // ISO first
   const iso = Date.parse(startAtIsoOrTime);
   if (!Number.isNaN(iso)) return new Date(iso);
-  // HH:mm fallback -> use next day at that time
+  // HH:mm fallback -> use today at that time
   const m = /^([0-2]\d):([0-5]\d)$/.exec(startAtIsoOrTime);
   if (m) {
     const now = new Date();
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     d.setHours(Number(m[1]), Number(m[2]), 0, 0);
     return d;
   }
@@ -34,7 +34,7 @@ export async function POST(req: Request) {
 
     // Basic check: avoid duplicate booking for same user/trainer/time
     const exists = await prisma.ptSession.findFirst({ where: { user_id: uid, trainer_id: trainerId, start_at: startAt } });
-    if (exists) return NextResponse.json({ message: "Termin je že rezerviran." });
+    if (exists) return NextResponse.json({ message: "Termin je že rezerviran.", error: "Termin je že rezerviran." }, { status: 400 });
 
     const session = await prisma.ptSession.create({
       data: {
@@ -46,7 +46,7 @@ export async function POST(req: Request) {
       },
     });
 
-    return NextResponse.json({ message: "Rezervacija shranjena", id: session.id });
+    return NextResponse.json({ message: "Rezervacija shranjena", id: String(session.id) }, { status: 201 });
   } catch (e) {
     return NextResponse.json({ error: "Napaka pri rezervaciji" }, { status: 500 });
   }

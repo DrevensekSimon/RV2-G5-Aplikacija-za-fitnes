@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST="{}"
+self.__REACT_LOADABLE_MANIFEST="{\"app/nadzorna-plosca/page.tsx -> @/components/ChartsWrapper\":{\"id\":\"app/nadzorna-plosca/page.tsx -> @/components/ChartsWrapper\",\"files\":[\"static/chunks/_app-pages-browser_components_ChartsWrapper_tsx.js\"]}}"

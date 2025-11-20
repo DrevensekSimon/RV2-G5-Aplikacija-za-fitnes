@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { addDays, format, isValid, parseISO, startOfDay } from "date-fns";
 import { sl } from "date-fns/locale";
+import BookTrainerClient from "@/components/BookTrainerClient";
 
 const times = [
   "08:00", "09:00", "10:00", "11:00", "12:00",
@@ -34,6 +35,9 @@ export default function DailyScheduleByDate() {
   const [sessions, setSessions] = useState<FetchedSession[]>([]);
   const [loading, setLoading] = useState(false);
   const [isTrainer, setIsTrainer] = useState(false);
+  const [bookingTime, setBookingTime] = useState<string | null>(null);
+  const [selectedSession, setSelectedSession] = useState<FetchedSession | null>(null);
+  const [trainers, setTrainers] = useState<Array<{ user_id: string; user: { first_name: string; last_name: string } }>>([]);
 
   useEffect(() => {
     // Sync state when URL param changes
@@ -70,6 +74,19 @@ export default function DailyScheduleByDate() {
       } catch {}
     };
     fetchMe();
+  }, []);
+
+  useEffect(() => {
+    const fetchTrainers = async () => {
+      try {
+        const res = await fetch('/api/trainers');
+        if (res.ok) {
+          const json = await res.json();
+          setTrainers(json.trainers || []);
+        }
+      } catch {}
+    };
+    fetchTrainers();
   }, []);
 
   const goto = (d: Date) => {
@@ -133,7 +150,18 @@ export default function DailyScheduleByDate() {
             times.map((time) => {
               const s = sessionByTime.get(time);
               return (
-                <div key={time} className={`h-16 border-b border-gray-200 flex items-center justify-center text-sm ${s ? "bg-yellow-100 text-gray-900 font-semibold" : "text-gray-400"}`}>
+                <div 
+                  key={time} 
+                  onClick={() => {
+                    if (!isTrainer) {
+                      if (s) {
+                        setSelectedSession(s);
+                      } else {
+                        setBookingTime(time);
+                      }
+                    }
+                  }}
+                  className={`h-16 border-b border-gray-200 flex items-center justify-center text-sm cursor-pointer hover:bg-gray-50 ${s ? "bg-yellow-100 text-gray-900 font-semibold" : "text-gray-400"}`}>
                   {s ? `${s.title}${s.trainer ? ` (${s.trainer})` : ''}` : "No Session"}
                 </div>
               );
@@ -141,6 +169,90 @@ export default function DailyScheduleByDate() {
           )}
         </div>
       </div>
+
+      {/* Booking Modal */}
+      {bookingTime && !isTrainer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-lg font-semibold mb-4">Rezerviraj trenerja za {bookingTime}</h2>
+            <div className="space-y-4 max-h-96 overflow-y-auto">
+              {trainers.map((trainer) => (
+                <div key={trainer.user_id} className="border rounded-lg p-4">
+                  <div className="font-medium mb-3">{trainer.user.first_name} {trainer.user.last_name}</div>
+                  <BookTrainerClient 
+                    trainerId={trainer.user_id}
+                    slots={[{ iso: '', label: bookingTime }]}
+                    bookDate={currentDay}
+                    onSuccess={() => {
+                      setBookingTime(null);
+                      // Refresh sessions
+                      const fetchSessions = async () => {
+                        try {
+                          const from = new Date(currentDay.getFullYear(), currentDay.getMonth(), currentDay.getDate());
+                          const to = new Date(from.getTime() + 24 * 60 * 60 * 1000);
+                          const res = await fetch(`/api/sessions?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`);
+                          if (res.ok) {
+                            const json = await res.json();
+                            setSessions(json.sessions || []);
+                          }
+                        } catch {}
+                      };
+                      fetchSessions();
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+            <button 
+              onClick={() => setBookingTime(null)}
+              className="mt-4 w-full bg-gray-200 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-300"
+            >
+              Zapri
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Session Modal */}
+      {selectedSession && !isTrainer && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <h2 className="text-lg font-semibold mb-4">Odpravi rezervacijo?</h2>
+            <p className="text-sm text-gray-600 mb-4">
+              {selectedSession.title}{selectedSession.trainer ? ` z ${selectedSession.trainer}` : ''}
+            </p>
+            <div className="flex gap-3">
+              <button 
+                onClick={async () => {
+                  try {
+                    const res = await fetch(`/api/pt/session/${selectedSession.id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                      setSelectedSession(null);
+                      // Refresh sessions
+                      const from = new Date(currentDay.getFullYear(), currentDay.getMonth(), currentDay.getDate());
+                      const to = new Date(from.getTime() + 24 * 60 * 60 * 1000);
+                      const sessRes = await fetch(`/api/sessions?from=${encodeURIComponent(from.toISOString())}&to=${encodeURIComponent(to.toISOString())}`);
+                      if (sessRes.ok) {
+                        const json = await sessRes.json();
+                        setSessions(json.sessions || []);
+                      }
+                    }
+                  } catch {}
+                }}
+                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700"
+              >
+                Izbriši
+              </button>
+              <button 
+                onClick={() => setSelectedSession(null)}
+                className="flex-1 bg-gray-200 text-gray-900 px-4 py-2 rounded-lg hover:bg-gray-300"
+              >
+                Prekliči
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
